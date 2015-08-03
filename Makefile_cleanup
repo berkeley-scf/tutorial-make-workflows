@@ -1,0 +1,7 @@
+# this file cleans up stuff created in generating make-workflows.html
+INTERIMS = fig*pdf *Rout *.md *.aux *.bbl *.blg *.log *.bak *~ *.Rout workshop_example/modules/*.md workshop_example/modules/*.html
+
+clean:
+	rm -f $(INTERIMS)
+
+.PHONY: clean 

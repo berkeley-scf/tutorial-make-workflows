@@ -97,7 +97,7 @@ As your Makefile involves more recipes and more complicated dependencies you har
 
 If you try to invoke a rule for which no dependencies have changed, you'll get a message like this: 
 ```{r}
-make
+make fig1.pdf
 ```
 
 `make -B` will force make to recreate all the targets. Or you could just remove the files that you want remade.
