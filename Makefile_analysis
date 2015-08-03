@@ -1,0 +1,46 @@
+INTERIMS = *.aux *.bbl *.blg *.log *.bak *~ *.Rout
+INPUT_DATA = census.dat
+DATA_WEBSERVER = http://www.census.gov/datafiles
+DATA = *.Rda *.csv
+USER = paciorek
+SERVER = foo.berkeley.edu
+WEBDIR = /web/share/$(USER)/files
+
+R_OPTS = --no-save
+R = R CMD BATCH $(R_OPTS)
+
+mypaper.pdf: mypaper.tex refs.bib tables.tex Figs/fig1.pdf Figs/fig2.pdf Figs/fig3.pdf
+	pdflatex mypaper
+	bibtex mypaper
+	pdflatex mypaper
+	pdflatex mypaper
+
+# would be nice to automate checking to see if data on web has changed
+web_data:
+	cd data; wget $(DATA_WEBSERVER)/$(INPUT_DATA)
+
+data.csv: code/make_data.py data/census.dat
+	cd code; python make_data.py
+
+results.Rda: data.csv model.R
+	cd code; $(R) model.R model.Rout
+
+tables.tex: results.Rda make_tables.R
+	cd code; $(R) make_tables.R make_tables.Rout
+
+# pattern rule for all fig*.pdf files
+Figs/fig%.pdf: R/fig%.R results.Rda
+	cd code; $(R) $< $(@:.pdf=.Rout)
+
+web: *.pdf *.tex code/*.R code/*.py
+	zip analysis.zip code/*.{R,py} *.pdf *.tex
+	scp analysis.zip $(USER)@$(SERVER):$(WEBDIR)/.
+
+clean:
+	rm -f $(INTERIMS)
+
+cleanall:
+	rm -f $(INTERIMS) $(DATA)
+
+# prevent confusion if there is a file 'clean', 'cleanall', 'web', 'web_data'
+.PHONY: clean cleanall web web_data

@@ -1,0 +1,237 @@
+Using make to manage workflows
+======================================================================================
+Automating the tasks in a project
+----------------------------------------------------------
+
+Chris Paciorek, Department of Statistics, UC Berkeley
+
+```{r setup, include=FALSE}
+opts_chunk$set(engine='bash') # because we're using a lot of bash, let's set as default
+```
+
+# 0) This Tutorial 
+
+This tutorial covers the basics of using *make* to automate workflows for projects. 
+
+A screencast accompanies this material.
+
+We'll use a virtual machine developed here at Berkeley, [the Berkeley Common Environment (BCE)](http://bce.berkeley.edu). BCE is a virtual Linux machine - basically it is a Linux computer that you can run within your own computer, regardless of whether you are using Windows, Mac, or Linux. This provides a common environment so that things behave the same for all of us.
+
+Materials for this tutorial, including the R markdown file that was used to create this document are available on github at (https://github.com/berkeley-scf/tutorial-make-workflows).  You can download the files by doing a `git clone` from a terminal window on UNIX-like machine. The following will work from the command line on BCE.
+```{r, clone, eval=FALSE}
+git clone https://github.com/berkeley-scf/tutorial-make-workflows
+```
+
+Or go to the [github site for this material](https://github.com/berkeley-scf/tutorial-make-workflows) and you can download a zipped copy of the materials (see the "Download ZIP" button in the lower right of the page).
+
+To create this HTML document, simply compile the corresponding R Markdown file in R as follows (the following will work from within BCE after cloning the repository as above).
+```{r, build-html, eval = FALSE}
+Rscript -e "library(knitr); knit2html('make-workflows.Rmd')"
+```
+  
+This tutorial will focus on using make to manage workflows, in particular analysis workflows. We won't cover use of make to build software.
+
+# 1) Basic usage of make
+
+*Make* is software that allows you to build software, create files, or carry out other tasks in a way that respects the dependencies amongst a series of files/tasks.
+
+It was developed for building software; for example compiling .cpp files to .o files and then linking to build an executable and move the executable into place on a computer. 
+
+However, as stated in the Make manual "You can use make with any programming language whose compiler can be run with a shell command. Indeed, make is not limited to programs. You can use it to describe any task where some files must be updated automatically from others whenever the others change."
+
+*Make* is a program that processes a *Makefile*, which contains the information about the rules to create files or carry out tasks and the dependencies between files/tasks.
+
+Here are some useful links:
+  - [Make manual](http://www.gnu.org/software/make/manual/make.html)
+
+  - [Tips on using Make for scientific workflows (data analysis, document preparation, etc.)](http://kbroman.org/minimal_make/)
+
+
+## 1.1) Basic structure of a Makefile
+
+A Makefile is made up of *rules* that create *targets* (or carry out other tasks).
+
+For example, here is a basic rule for generating a PDF from a LaTeX file:
+
+```
+mypaper.pdf: mypaper.bib mypaper.tex tables.tex fig1.pdf fig2.pdf
+	pdflatex mypaper
+	bibtex mypaper
+	pdflatex mypaper
+	pdflatex mypaper
+```
+    
+The components of the rule are:
+ - Target: mypaper.pdf
+ - Prerequisites: mypaper.bib, mypaper.tex, etc.
+ - Recipe: pdflatex mypaper ...
+ 
+ Caution: the recipe line(s) must be indented with a TAB and not with any spaces.
+
+The file *Makefile* has a short, but complete, Makefile for creating a paper based on figures created in R. I'll print it out here, but the indentation is messed up in embedding it in this document.
+
+```{r}
+cat Makefile
+```
+
+
+If we wanted to run the full workflow, we just run `make` on the file:
+```{r}
+make
+```
+
+If when the file is named *Makefile* (as is the case here), we simply invoke `make`. If it were named something else, we would need `make -f name_of_makefile`.
+
+If we wanted to create *fig1.pdf* alone, we could invoke it specifically by naming the target of interest. (I `touch` fig1.R so that make will run the rule, thinking that a prerequisite has been modified - see below).
+```{r}
+touch fig1.R 
+make fig1.pdf
+``` 
+
+
+##  Dependencies
+
+Make only runs a recipe when any of the dependent files have changed. So in the above example, if fig1.R changes and we invoke `make`, creation of fig1.pdf is re-done as is creation of mypaper.pdf, but fig2.pdf is **not** recreated. When there are steps that take a long time and don't need to be re-done, this can be quite helpful.
+
+As your Makefile involves more recipes and more complicated dependencies you harness more of the power of make.
+
+If you try to invoke a rule for which no dependencies have changed, you'll get a message like this: 
+```{r}
+make
+```
+
+`make -B` will force make to recreate all the targets. Or you could just remove the files that you want remade.
+
+# Analysis workflows using make, extended example
+
+One nice use of make is to automate workflows. As with building software, we have a series of things we want to do as part of an overall workflow. We may want to run one or more of those steps. Or we might want to run the full analysis but without rerunning analyses whose dependencies have not changed. Another benefit of this is just taking a structured, programmatic approach to show exactly what needs to be done for each piece of the analysis. 
+
+What are the steps you might have in your Makefile?
+- getting data
+- preprocessing/cleaning
+- analysis/modeling
+- postprocessing output
+- figures/tables
+- presentations/papers
+
+A more expansive version of the example workflow in *Makefile* is in *Makefile_analysis*. The workflow won't run as I don't have all the input files available.
+
+```{r}
+cat Makefile_analysis
+```
+
+
+## Using variables in Makefiles
+
+Much of the power of make comes from using variables to automate recipes and avoid duplicated syntax. 
+
+In the above example, we avoid rewriting the R CMD BATCH syntax by setting a variable: ` R = R CMD BATCH --no-save `
+
+and using `$(R)` in place of the full command whereever it appears.
+
+Also note the other examples of using variables in *Makefile_analysis*.
+
+## Types of rules
+
+We've seen a bunch of explicit rules that directly specify the recipe for a given target. In *Makefile_analysis* we've also streamlined things by using a pattern rule to make a class of targets. 
+
+The pattern rule uses `%`, which acts as a wildcard and in this case tells make how to create targets such as *fig1.pdf*, *fig2.pdf*, ... from corresponding prerequisites *fig1.R*, *fig2.R*, etc. The `$<` and `$(@:.pdf=.Rout)` are special variables and substitutions described further later. Briefly `$<` refers to the target and `$(@:.pdf=.Rout)` substitutes .Rout for any cases of .pdf found in the target. 
+
+You can also see rules for deleting interim files, the *clean* and *cleanall* targets.
+
+# Using make for document preparation
+
+The file *workshop_example/Makefile* is an example that illustrates how you might use make to prepare presentation materials for a workshop. It calls *workshop_example/modules/Makefile*, so take a look at that file.
+
+```{r}
+cat workshop_example/Makefile
+echo "  "
+echo "################ nested Makefile ##############################"
+echo "  "
+cat workshop_example/modules/Makefile
+```
+
+Note the use of pattern rules and the use of some auxiliary convenience targets to save typing. Also note how you can have a top-level Makefile that calls one more Makefiles elsewhere (often in subdirectories).
+
+Once again, I won't run make here because I don't have all the necessary dependencies in *workshop_example/modules*.
+
+# More advanced features of make
+
+## More details on defining variables
+
+ - := causes the assignment to occur at the time the variable is defined
+ - = causes the assignment to occur at the time the variable is used in a command, so order of variable definition does not matter
+ - += appends to the variable, e.g.
+ 
+```
+R = R CMD BATCH
+R += --no-save
+```
+ 
+* `$@` matches the target
+* `$<` matches the first prerequesite
+* `$^` matches all prerequisites
+ 
+The file *Makefile_variables* illustrates some use of variables, focusing on the distinction between `=` and `:=`.
+
+```{r}
+cat Makefile_variables
+```
+
+```{r}
+make -f Makefile_variables
+```
+
+## Functions applied to variables
+
+One can apply functions to variables using the following syntax `$(function_name argument)`.
+
+For example to substitute 'html' for 'md' in variable FILE: `$(subst html, md, $(FILE))`.
+
+Some of the functions you can use deal with string substitution and manipulation as well as manipulating file names and extensions and paths.
+
+Finally you can use 'if' in the context of functions: `$(if condition,then[,else])'. And there is a foreach function that will iterate over white-spaced separated values in a variable.
+
+Here are some examples:
+```
+FILE = workshop.md
+HTMLFILE = $(subst md,html, $(FILE))
+
+MDFILES = mod1.md mod2.md default.md example.md
+FILES = $(patsubst mod%.md,mod%.html, $(MDFILES))
+
+INPUT = foo bar foo duh
+SORTED = $(sort $(INPUT))
+
+INPUTFILES = /tmp/foo.c /var/tmp/bar.o
+INPUTDIRS = $(dir $(INPUTFILES))
+SUFFIXES = $(suffix $(INPUTFILES))
+BASES = $(basename $(INPUTFILES))
+TRANSFORMED = $(addsuffix .cpp, $(BASES))
+
+DIRS := code_example workshop_example
+ALLFILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*))
+```
+
+The file *Makefile_functions* will illustrate these in action:
+```{r}
+make -f Makefile_functions
+```
+
+Another way to do substitution is with syntax like this, which replaces .pdf with .Rout in the `$@` variable. 
+
+
+
+## What make does
+
+Make processes the Makefile, figuring out the dependency tree, evaluating variables, and running the recipes that have prerequisites that have changed. More specifically, it
+
+ - parses the Makefile
+ - builds up variable chains
+ - builds up a database of rules
+ - looks at the target specified (by default the first target)
+ - creates chain of rules from files that exist to the target
+     - evaluates needed '=' variable assignments
+ - use date stamps on files to determine what dependencies need to be executed for target to be done
+
+
