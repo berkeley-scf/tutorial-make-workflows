@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Using make to manage workflows</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h1>Using make to manage workflows</h1>
+
+<h2>Automating the tasks in a project</h2>
+
+<p>Chris Paciorek, Department of Statistics, UC Berkeley</p>
+
+<h1>0) This Tutorial</h1>
+
+<p>This tutorial covers the basics of using <em>make</em> to automate workflows for projects. </p>
+
+<p>A screencast accompanies this material.</p>
+
+<p>We&#39;ll use a virtual machine developed here at Berkeley, <a href="http://bce.berkeley.edu">the Berkeley Common Environment (BCE)</a>. BCE is a virtual Linux machine - basically it is a Linux computer that you can run within your own computer, regardless of whether you are using Windows, Mac, or Linux. This provides a common environment so that things behave the same for all of us.</p>
+
+<p>Materials for this tutorial, including the R markdown file that was used to create this document are available on github at (<a href="https://github.com/berkeley-scf/tutorial-make-workflows">https://github.com/berkeley-scf/tutorial-make-workflows</a>).  You can download the files by doing a <code>git clone</code> from a terminal window on UNIX-like machine. The following will work from the command line on BCE.</p>
+
+<pre><code class="bash">git clone https://github.com/berkeley-scf/tutorial-make-workflows
+</code></pre>
+
+<p>Or go to the <a href="https://github.com/berkeley-scf/tutorial-make-workflows">github site for this material</a> and you can download a zipped copy of the materials (see the &ldquo;Download ZIP&rdquo; button in the lower right of the page).</p>
+
+<p>To create this HTML document, simply compile the corresponding R Markdown file in R as follows (the following will work from within BCE after cloning the repository as above).</p>
+
+<pre><code class="bash">Rscript -e &quot;library(knitr); knit2html(&#39;make-workflows.Rmd&#39;)&quot;
+</code></pre>
+
+<p>This tutorial will focus on using make to manage workflows, in particular analysis workflows. We won&#39;t cover use of make to build software.</p>
+
+<h1>1) Basic usage of make</h1>
+
+<p><em>Make</em> is software that allows you to build software, create files, or carry out other tasks in a way that respects the dependencies amongst a series of files/tasks.</p>
+
+<p>It was developed for building software; for example compiling .cpp files to .o files and then linking to build an executable and move the executable into place on a computer. </p>
+
+<p>However, as stated in the Make manual &ldquo;You can use make with any programming language whose compiler can be run with a shell command. Indeed, make is not limited to programs. You can use it to describe any task where some files must be updated automatically from others whenever the others change.&rdquo;</p>
+
+<p><em>Make</em> is a program that processes a <em>Makefile</em>, which contains the information about the rules to create files or carry out tasks and the dependencies between files/tasks.</p>
+
+<p>Here are some useful links:</p>
+
+<ul>
+<li><p><a href="http://www.gnu.org/software/make/manual/make.html">Make manual</a></p></li>
+<li><p><a href="http://kbroman.org/minimal_make/">Tips on using Make for scientific workflows (data analysis, document preparation, etc.)</a></p></li>
+</ul>
+
+<h2>1.1) Basic structure of a Makefile</h2>
+
+<p>A Makefile is made up of <em>rules</em> that create <em>targets</em> (or carry out other tasks).</p>
+
+<p>For example, here is a basic rule for generating a PDF from a LaTeX file:</p>
+
+<pre><code>mypaper.pdf: mypaper.bib mypaper.tex tables.tex fig1.pdf fig2.pdf
+    pdflatex mypaper
+    bibtex mypaper
+    pdflatex mypaper
+    pdflatex mypaper
+</code></pre>
+
+<p>The components of the rule are:</p>
+
+<ul>
+<li>Target: mypaper.pdf</li>
+<li>Prerequisites: mypaper.bib, mypaper.tex, etc.</li>
+<li><p>Recipe: pdflatex mypaper &hellip;</p>
+
+<p>Caution: the recipe line(s) must be indented with a TAB and not with any spaces.</p></li>
+</ul>
+
+<p>The file <em>Makefile</em> has a short, but complete, Makefile for creating a paper based on figures created in R. I&#39;ll print it out here, but the indentation is messed up in embedding it in this document.</p>
+
+<pre><code class="bash">cat Makefile
+</code></pre>
+
+<pre><code>## mypaper.pdf: mypaper.tex refs.bib fig1.pdf fig2.pdf
+##  pdflatex mypaper
+##  bibtex mypaper
+##  pdflatex mypaper
+##  pdflatex mypaper
+## 
+## results.Rda: data.csv model.R
+##  R CMD BATCH --no-save model.R model.Rout
+## 
+## fig1.pdf: fig1.R results.Rda
+##  R CMD BATCH --no-save fig1.R fig1.Rout
+## 
+## fig2.pdf: fig2.R results.Rda
+##  R CMD BATCH --no-save fig2.R fig2.Rout
+</code></pre>
+
+<p>If we wanted to run the full workflow, we just run <code>make</code> on the file:</p>
+
+<pre><code class="bash">make
+</code></pre>
+
+<pre><code>## pdflatex mypaper
+## This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Debian) (preloaded format=pdflatex)
+##  restricted \write18 enabled.
+## entering extended mode
+## (./mypaper.tex
+## LaTeX2e &lt;2014/05/01&gt;
+## Babel &lt;3.9k&gt; and hyphenation patterns for 2 languages loaded.
+## (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+## Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+## (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
+## (/usr/share/texlive/texmf-dist/tex/latex/psnfss/times.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/graphics.cfg)
+## (/usr/share/texlive/texmf-dist/tex/latex/pdftex-def/pdftex.def
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/infwarerr.sty)
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ltxcmds.sty))))
+## (/usr/share/texlive/texmf-dist/tex/latex/natbib/natbib.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifpdf.sty)
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifvtex.sty)
+## (/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty)) (./mypaper.aux
+## ) (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd)
+## (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
+## [Loading MPS to PDF converter (version 2006.09.02).]
+## ) (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifluatex.sty))
+## (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+## (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/grfext.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty))
+## (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/etexcmds.sty)))
+## (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg))
+## *geometry* driver: auto-detecting
+## *geometry* detected driver: pdftex
+## *geometry* verbose mode - [ preamble ] result:
+## * driver: pdftex
+## * paper: &lt;default&gt;
+## * layout: &lt;same size as paper&gt;
+## * layoutoffset:(h,v)=(0.0pt,0.0pt)
+## * modes: 
+## * h-part:(L,W,R)=(72.26999pt, 469.75502pt, 72.26999pt)
+## * v-part:(T,H,B)=(72.26999pt, 650.43001pt, 72.26999pt)
+## * \paperwidth=614.295pt
+## * \paperheight=794.96999pt
+## * \textwidth=469.75502pt
+## * \textheight=650.43001pt
+## * \oddsidemargin=0.0pt
+## * \evensidemargin=0.0pt
+## * \topmargin=-37.0pt
+## * \headheight=12.0pt
+## * \headsep=25.0pt
+## * \topskip=12.0pt
+## * \footskip=30.0pt
+## * \marginparwidth=44.0pt
+## * \marginparsep=10.0pt
+## * \columnsep=10.0pt
+## * \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+## * \hoffset=0.0pt
+## * \voffset=0.0pt
+## * \mag=1000
+## * \@twocolumnfalse
+## * \@twosidefalse
+## * \@mparswitchfalse
+## * \@reversemarginfalse
+## * (1in=72.27pt=25.4mm, 1cm=28.453pt)
+## 
+## &lt;fig1.pdf, id=1, 505.89pt x 505.89pt&gt; &lt;use fig1.pdf&gt;
+## &lt;fig2.pdf, id=2, 505.89pt x 505.89pt&gt; &lt;use fig2.pdf&gt; (./mypaper.bbl) [1{/var/li
+## b/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2 &lt;./fig1.pdf&gt; &lt;./fig2.pdf&gt;]
+## (./mypaper.aux) ){/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}&lt;/u
+## sr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texliv
+## e/texmf-dist/fonts/type1/urw/times/utmr8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fo
+## nts/type1/urw/times/utmri8a.pfb&gt;
+## Output written on mypaper.pdf (2 pages, 38780 bytes).
+## Transcript written on mypaper.log.
+## bibtex mypaper
+## This is BibTeX, Version 0.99d (TeX Live 2014/Debian)
+## The top-level auxiliary file: mypaper.aux
+## The style file: plainnat.bst
+## Database file #1: refs.bib.bib
+## pdflatex mypaper
+## This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Debian) (preloaded format=pdflatex)
+##  restricted \write18 enabled.
+## entering extended mode
+## (./mypaper.tex
+## LaTeX2e &lt;2014/05/01&gt;
+## Babel &lt;3.9k&gt; and hyphenation patterns for 2 languages loaded.
+## (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+## Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+## (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
+## (/usr/share/texlive/texmf-dist/tex/latex/psnfss/times.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/graphics.cfg)
+## (/usr/share/texlive/texmf-dist/tex/latex/pdftex-def/pdftex.def
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/infwarerr.sty)
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ltxcmds.sty))))
+## (/usr/share/texlive/texmf-dist/tex/latex/natbib/natbib.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifpdf.sty)
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifvtex.sty)
+## (/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty)) (./mypaper.aux
+## ) (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd)
+## (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
+## [Loading MPS to PDF converter (version 2006.09.02).]
+## ) (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifluatex.sty))
+## (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+## (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/grfext.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty))
+## (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/etexcmds.sty)))
+## (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg))
+## *geometry* driver: auto-detecting
+## *geometry* detected driver: pdftex
+## *geometry* verbose mode - [ preamble ] result:
+## * driver: pdftex
+## * paper: &lt;default&gt;
+## * layout: &lt;same size as paper&gt;
+## * layoutoffset:(h,v)=(0.0pt,0.0pt)
+## * modes: 
+## * h-part:(L,W,R)=(72.26999pt, 469.75502pt, 72.26999pt)
+## * v-part:(T,H,B)=(72.26999pt, 650.43001pt, 72.26999pt)
+## * \paperwidth=614.295pt
+## * \paperheight=794.96999pt
+## * \textwidth=469.75502pt
+## * \textheight=650.43001pt
+## * \oddsidemargin=0.0pt
+## * \evensidemargin=0.0pt
+## * \topmargin=-37.0pt
+## * \headheight=12.0pt
+## * \headsep=25.0pt
+## * \topskip=12.0pt
+## * \footskip=30.0pt
+## * \marginparwidth=44.0pt
+## * \marginparsep=10.0pt
+## * \columnsep=10.0pt
+## * \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+## * \hoffset=0.0pt
+## * \voffset=0.0pt
+## * \mag=1000
+## * \@twocolumnfalse
+## * \@twosidefalse
+## * \@mparswitchfalse
+## * \@reversemarginfalse
+## * (1in=72.27pt=25.4mm, 1cm=28.453pt)
+## 
+## &lt;fig1.pdf, id=1, 505.89pt x 505.89pt&gt; &lt;use fig1.pdf&gt;
+## &lt;fig2.pdf, id=2, 505.89pt x 505.89pt&gt; &lt;use fig2.pdf&gt; (./mypaper.bbl) [1{/var/li
+## b/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2 &lt;./fig1.pdf&gt; &lt;./fig2.pdf&gt;]
+## (./mypaper.aux) ){/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}&lt;/u
+## sr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texliv
+## e/texmf-dist/fonts/type1/urw/times/utmr8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fo
+## nts/type1/urw/times/utmri8a.pfb&gt;
+## Output written on mypaper.pdf (2 pages, 38780 bytes).
+## Transcript written on mypaper.log.
+## pdflatex mypaper
+## This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Debian) (preloaded format=pdflatex)
+##  restricted \write18 enabled.
+## entering extended mode
+## (./mypaper.tex
+## LaTeX2e &lt;2014/05/01&gt;
+## Babel &lt;3.9k&gt; and hyphenation patterns for 2 languages loaded.
+## (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+## Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+## (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
+## (/usr/share/texlive/texmf-dist/tex/latex/psnfss/times.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+## (/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/graphics.cfg)
+## (/usr/share/texlive/texmf-dist/tex/latex/pdftex-def/pdftex.def
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/infwarerr.sty)
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ltxcmds.sty))))
+## (/usr/share/texlive/texmf-dist/tex/latex/natbib/natbib.sty)
+## (/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifpdf.sty)
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifvtex.sty)
+## (/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty)) (./mypaper.aux
+## ) (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd)
+## (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
+## [Loading MPS to PDF converter (version 2006.09.02).]
+## ) (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifluatex.sty))
+## (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+## (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/grfext.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty))
+## (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/etexcmds.sty)))
+## (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg))
+## *geometry* driver: auto-detecting
+## *geometry* detected driver: pdftex
+## *geometry* verbose mode - [ preamble ] result:
+## * driver: pdftex
+## * paper: &lt;default&gt;
+## * layout: &lt;same size as paper&gt;
+## * layoutoffset:(h,v)=(0.0pt,0.0pt)
+## * modes: 
+## * h-part:(L,W,R)=(72.26999pt, 469.75502pt, 72.26999pt)
+## * v-part:(T,H,B)=(72.26999pt, 650.43001pt, 72.26999pt)
+## * \paperwidth=614.295pt
+## * \paperheight=794.96999pt
+## * \textwidth=469.75502pt
+## * \textheight=650.43001pt
+## * \oddsidemargin=0.0pt
+## * \evensidemargin=0.0pt
+## * \topmargin=-37.0pt
+## * \headheight=12.0pt
+## * \headsep=25.0pt
+## * \topskip=12.0pt
+## * \footskip=30.0pt
+## * \marginparwidth=44.0pt
+## * \marginparsep=10.0pt
+## * \columnsep=10.0pt
+## * \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+## * \hoffset=0.0pt
+## * \voffset=0.0pt
+## * \mag=1000
+## * \@twocolumnfalse
+## * \@twosidefalse
+## * \@mparswitchfalse
+## * \@reversemarginfalse
+## * (1in=72.27pt=25.4mm, 1cm=28.453pt)
+## 
+## &lt;fig1.pdf, id=1, 505.89pt x 505.89pt&gt; &lt;use fig1.pdf&gt;
+## &lt;fig2.pdf, id=2, 505.89pt x 505.89pt&gt; &lt;use fig2.pdf&gt; (./mypaper.bbl) [1{/var/li
+## b/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2 &lt;./fig1.pdf&gt; &lt;./fig2.pdf&gt;]
+## (./mypaper.aux) ){/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}&lt;/u
+## sr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texliv
+## e/texmf-dist/fonts/type1/urw/times/utmr8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fo
+## nts/type1/urw/times/utmri8a.pfb&gt;
+## Output written on mypaper.pdf (2 pages, 38780 bytes).
+## Transcript written on mypaper.log.
+</code></pre>
+
+<p>If when the file is named <em>Makefile</em> (as is the case here), we simply invoke <code>make</code>. If it were named something else, we would need <code>make -f name_of_makefile</code>.</p>
+
+<p>If we wanted to create <em>fig1.pdf</em> alone, we could invoke it specifically by naming the target of interest. (I <code>touch</code> fig1.R so that make will run the rule, thinking that a prerequisite has been modified - see below).</p>
+
+<pre><code class="bash">touch fig1.R 
+make fig1.pdf
+</code></pre>
+
+<pre><code>## R CMD BATCH --no-save fig1.R fig1.Rout
+</code></pre>
+
+<h2>Dependencies</h2>
+
+<p>Make only runs a recipe when any of the dependent files have changed. So in the above example, if fig1.R changes and we invoke <code>make</code>, creation of fig1.pdf is re-done as is creation of mypaper.pdf, but fig2.pdf is <strong>not</strong> recreated. When there are steps that take a long time and don&#39;t need to be re-done, this can be quite helpful.</p>
+
+<p>As your Makefile involves more recipes and more complicated dependencies you harness more of the power of make.</p>
+
+<p>If you try to invoke a rule for which no dependencies have changed, you&#39;ll get a message like this: </p>
+
+<pre><code class="bash">make fig1.pdf
+</code></pre>
+
+<pre><code>## make: &#39;fig1.pdf&#39; is up to date.
+</code></pre>
+
+<p><code>make -B</code> will force make to recreate all the targets. Or you could just remove the files that you want remade.</p>
+
+<h1>Analysis workflows using make, extended example</h1>
+
+<p>One nice use of make is to automate workflows. As with building software, we have a series of things we want to do as part of an overall workflow. We may want to run one or more of those steps. Or we might want to run the full analysis but without rerunning analyses whose dependencies have not changed. Another benefit of this is just taking a structured, programmatic approach to show exactly what needs to be done for each piece of the analysis. </p>
+
+<p>What are the steps you might have in your Makefile?</p>
+
+<ul>
+<li>getting data</li>
+<li>preprocessing/cleaning</li>
+<li>analysis/modeling</li>
+<li>postprocessing output</li>
+<li>figures/tables</li>
+<li>presentations/papers</li>
+</ul>
+
+<p>A more expansive version of the example workflow in <em>Makefile</em> is in <em>Makefile_analysis</em>. The workflow won&#39;t run as I don&#39;t have all the input files available.</p>
+
+<pre><code class="bash">cat Makefile_analysis
+</code></pre>
+
+<pre><code>## INTERIMS = *.aux *.bbl *.blg *.log *.bak *~ *.Rout
+## INPUT_DATA = census.dat
+## DATA_WEBSERVER = http://www.census.gov/datafiles
+## DATA = *.Rda *.csv
+## USER = paciorek
+## SERVER = foo.berkeley.edu
+## WEBDIR = /web/share/$(USER)/files
+## 
+## R_OPTS = --no-save
+## R = R CMD BATCH $(R_OPTS)
+## 
+## mypaper.pdf: mypaper.tex refs.bib tables.tex Figs/fig1.pdf Figs/fig2.pdf Figs/fig3.pdf
+##  pdflatex mypaper
+##  bibtex mypaper
+##  pdflatex mypaper
+##  pdflatex mypaper
+## 
+## # would be nice to automate checking to see if data on web has changed
+## web_data:
+##  cd data; wget $(DATA_WEBSERVER)/$(INPUT_DATA)
+## 
+## data.csv: code/make_data.py data/census.dat
+##  cd code; python make_data.py
+## 
+## results.Rda: data.csv model.R
+##  cd code; $(R) model.R model.Rout
+## 
+## tables.tex: results.Rda make_tables.R
+##  cd code; $(R) make_tables.R make_tables.Rout
+## 
+## # pattern rule for all fig*.pdf files
+## Figs/fig%.pdf: R/fig%.R results.Rda
+##  cd code; $(R) $&lt; $(@:.pdf=.Rout)
+## 
+## web: *.pdf *.tex code/*.R code/*.py
+##  zip analysis.zip code/*.{R,py} *.pdf *.tex
+##  scp analysis.zip $(USER)@$(SERVER):$(WEBDIR)/.
+## 
+## clean:
+##  rm -f $(INTERIMS)
+## 
+## cleanall:
+##  rm -f $(INTERIMS) $(DATA)
+## 
+## # prevent confusion if there is a file &#39;clean&#39;, &#39;cleanall&#39;, &#39;web&#39;, &#39;web_data&#39;
+## .PHONY: clean cleanall web web_data
+</code></pre>
+
+<h2>Using variables in Makefiles</h2>
+
+<p>Much of the power of make comes from using variables to automate recipes and avoid duplicated syntax. </p>
+
+<p>In the above example, we avoid rewriting the R CMD BATCH syntax by setting a variable: <code>R = R CMD BATCH --no-save</code></p>
+
+<p>and using <code>$(R)</code> in place of the full command whereever it appears.</p>
+
+<p>Also note the other examples of using variables in <em>Makefile_analysis</em>.</p>
+
+<h2>Types of rules</h2>
+
+<p>We&#39;ve seen a bunch of explicit rules that directly specify the recipe for a given target. In <em>Makefile_analysis</em> we&#39;ve also streamlined things by using a pattern rule to make a class of targets. </p>
+
+<p>The pattern rule uses <code>%</code>, which acts as a wildcard and in this case tells make how to create targets such as <em>fig1.pdf</em>, <em>fig2.pdf</em>, &hellip; from corresponding prerequisites <em>fig1.R</em>, <em>fig2.R</em>, etc. The <code>$&lt;</code> and <code>$(@:.pdf=.Rout)</code> are special variables and substitutions described further later. Briefly <code>$&lt;</code> refers to the target and <code>$(@:.pdf=.Rout)</code> substitutes .Rout for any cases of .pdf found in the target. </p>
+
+<p>You can also see rules for deleting interim files, the <em>clean</em> and <em>cleanall</em> targets.</p>
+
+<h1>Using make for document preparation</h1>
+
+<p>The file <em>workshop_example/Makefile</em> is an example that illustrates how you might use make to prepare presentation materials for a workshop. It calls <em>workshop_example/modules/Makefile</em>, so take a look at that file.</p>
+
+<pre><code class="bash">cat workshop_example/Makefile
+echo &quot;  &quot;
+echo &quot;################ nested Makefile ##############################&quot;
+echo &quot;  &quot;
+cat workshop_example/modules/Makefile
+</code></pre>
+
+<pre><code>## BASE_DIR = .
+## MODULES_DIR = $(BASE_DIR)/modules
+## 
+## modules: 
+##  cd $(MODULES_DIR) &amp;&amp; $(MAKE) all
+## 
+## clean:
+##  cd $(MODULES_DIR) &amp;&amp; $(MAKE) clean
+##   
+## ################ nested Makefile ##############################
+##   
+## .PHONY: clean  # so clean always done even if a file named clean is present
+## 
+## all: clean 0 1 2 3 4 5 6 7 8 9 10 11
+## 
+## clean:
+##  rm -rf *.md *.html *.pdf \
+##  cache/ figure/
+## #    -rm -rf *.md *.html *.pdf cache/ figure/  
+## # -rm ignores errors when rm is called
+## 
+## 
+## %.html: %.Rmd
+##  echo $(@)
+##  ./make_slides $(basename $(@))
+##  rm $(basename $(@)).md   # remove temporary
+##  echo $(basename $(@))
+## 
+## 0: module0_induction.html
+## 1: module1_basics.html
+## 2: module2_managingR.html
+## 3: module3_data.html
+## 4: module4_calc.html
+## 5: module5_analysis.html
+## 6: module6_programming.html
+## 7: module7_coreTools.html
+## 8: module8_graphics.html
+## 9: module9_workflows.html
+## 10: module10_advanced.html
+## 11: module11_next.html
+</code></pre>
+
+<p>Note the use of pattern rules and the use of some auxiliary convenience targets to save typing. Also note how you can have a top-level Makefile that calls one more Makefiles elsewhere (often in subdirectories).</p>
+
+<p>Once again, I won&#39;t run make here because I don&#39;t have all the necessary dependencies in <em>workshop_example/modules</em>.</p>
+
+<h1>More advanced features of make</h1>
+
+<h2>More details on defining variables</h2>
+
+<ul>
+<li>:= causes the assignment to occur at the time the variable is defined</li>
+<li>= causes the assignment to occur at the time the variable is used in a command, so order of variable definition does not matter</li>
+<li>+= appends to the variable, e.g.</li>
+</ul>
+
+<pre><code>R = R CMD BATCH
+R += --no-save
+</code></pre>
+
+<ul>
+<li><code>$@</code> matches the target</li>
+<li><code>$&lt;</code> matches the first prerequesite</li>
+<li><code>$^</code> matches all prerequisites</li>
+</ul>
+
+<p>The file <em>Makefile_variables</em> illustrates some use of variables, focusing on the distinction between <code>=</code> and <code>:=</code>.</p>
+
+<pre><code class="bash">cat Makefile_variables
+</code></pre>
+
+<pre><code>## # Test 1
+## foo1 = $(bar1)
+## bar1 = $(dum1)
+## dum1 = Huh?
+## 
+## # Test 2
+## foo2 := ${bar2}
+## bar2 := Huh?
+## 
+## # Test 3
+## foo3 = hi there
+## bar3 := ${foo3}
+## foo3 = see ya
+## 
+## # Test 4
+## foo4 = hi there
+## bar4 = ${foo4}
+## foo4 = see ya
+## 
+## all:
+##  echo &quot;Test 1: foo1 is $(foo1)&quot;
+##  echo &quot;Test 2: foo2 is $(foo2)&quot;
+##  echo &quot;Test 3: bar3 is $(bar3)&quot;
+##  echo &quot;Test 3: foo3 is: $(foo3)&quot;
+##  echo &quot;Test 4: bar4 is $(bar4)&quot;
+##  echo &quot;Test 4: foo4 is $(foo4)&quot;
+</code></pre>
+
+<pre><code class="bash">make -f Makefile_variables
+</code></pre>
+
+<pre><code>## echo &quot;Test 1: foo1 is Huh?&quot;
+## Test 1: foo1 is Huh?
+## echo &quot;Test 2: foo2 is &quot;
+## Test 2: foo2 is 
+## echo &quot;Test 3: bar3 is hi there&quot;
+## Test 3: bar3 is hi there
+## echo &quot;Test 3: foo3 is: see ya&quot;
+## Test 3: foo3 is: see ya
+## echo &quot;Test 4: bar4 is see ya&quot;
+## Test 4: bar4 is see ya
+## echo &quot;Test 4: foo4 is see ya&quot;
+## Test 4: foo4 is see ya
+</code></pre>
+
+<h2>Functions applied to variables</h2>
+
+<p>One can apply functions to variables using the following syntax <code>$(function_name argument)</code>.</p>
+
+<p>For example to substitute &#39;html&#39; for &#39;md&#39; in variable FILE: <code>$(subst html, md, $(FILE))</code>.</p>
+
+<p>Some of the functions you can use deal with string substitution and manipulation as well as manipulating file names and extensions and paths.</p>
+
+<p>Finally you can use &#39;if&#39; in the context of functions: $(if condition,then[,else])&#39;. And there is a foreach function that will iterate over white-spaced separated values in a variable.</p>
+
+<p>Here are some examples:</p>
+
+<pre><code>FILE = workshop.md
+HTMLFILE = $(subst md,html, $(FILE))
+
+MDFILES = mod1.md mod2.md default.md example.md
+FILES = $(patsubst mod%.md,mod%.html, $(MDFILES))
+
+INPUT = foo bar foo duh
+SORTED = $(sort $(INPUT))
+
+INPUTFILES = /tmp/foo.c /var/tmp/bar.o
+INPUTDIRS = $(dir $(INPUTFILES))
+SUFFIXES = $(suffix $(INPUTFILES))
+BASES = $(basename $(INPUTFILES))
+TRANSFORMED = $(addsuffix .cpp, $(BASES))
+
+DIRS := code_example workshop_example
+ALLFILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*))
+</code></pre>
+
+<p>The file <em>Makefile_functions</em> will illustrate these in action:</p>
+
+<pre><code class="bash">make -f Makefile_functions
+</code></pre>
+
+<pre><code>## echo HTMLFILE is  workshop.html
+## HTMLFILE is workshop.html
+## echo FILES is mod1.html mod2.html default.md example.md
+## FILES is mod1.html mod2.html default.md example.md
+## echo SORTED is bar duh foo
+## SORTED is bar duh foo
+## echo INPUTDIRS is /tmp/ /var/tmp/
+## INPUTDIRS is /tmp/ /var/tmp/
+## echo SUFFIXES is .c .o
+## SUFFIXES is .c .o
+## echo TRANSFORMED is /tmp/foo.cpp /var/tmp/bar.cpp
+## TRANSFORMED is /tmp/foo.cpp /var/tmp/bar.cpp
+## echo ALLFILES is    workshop_example/Makefile workshop_example/modules
+## ALLFILES is workshop_example/Makefile workshop_example/modules
+</code></pre>
+
+<p>Another way to do substitution is with syntax like this, which replaces .pdf with .Rout in the <code>$@</code> variable. </p>
+
+<h2>What make does</h2>
+
+<p>Make processes the Makefile, figuring out the dependency tree, evaluating variables, and running the recipes that have prerequisites that have changed. More specifically, it</p>
+
+<ul>
+<li>parses the Makefile</li>
+<li>builds up variable chains</li>
+<li>builds up a database of rules</li>
+<li>looks at the target specified (by default the first target)</li>
+<li>creates chain of rules from files that exist to the target
+
+<ul>
+<li>evaluates needed &#39;=&#39; variable assignments</li>
+</ul></li>
+<li>use date stamps on files to determine what dependencies need to be executed for target to be done</li>
+</ul>
+
+</body>
+
+</html>
