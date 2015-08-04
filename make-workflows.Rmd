@@ -75,7 +75,8 @@ cat Makefile
 ```
 
 
-If we wanted to run the full workflow, we just run `make` on the file:
+If we wanted to run the full workflow, we just run `make` on the file. Note that first the *fig1.pdf* and *fig2.pdf* rules are run and then *mypaper.pdf* is created.
+
 ```{r}
 make
 ```
@@ -135,7 +136,7 @@ Also note the other examples of using variables in *Makefile_analysis*.
 
 We've seen a bunch of explicit rules that directly specify the recipe for a given target. In *Makefile_analysis* we've also streamlined things by using a pattern rule to make a class of targets. 
 
-The pattern rule uses `%`, which acts as a wildcard and in this case tells make how to create targets such as *fig1.pdf*, *fig2.pdf*, ... from corresponding prerequisites *fig1.R*, *fig2.R*, etc. The `$<` and `$(@:.pdf=.Rout)` are special variables and substitutions described further later. Briefly `$<` refers to the target and `$(@:.pdf=.Rout)` substitutes .Rout for any cases of .pdf found in the target. 
+The pattern rule uses `%`, which acts as a wildcard and in this case tells make how to create targets such as *fig1.pdf*, *fig2.pdf*, ... from corresponding prerequisites *fig1.R*, *fig2.R*, etc. The `$<` and `$(@:.pdf=.Rout)` are special variables and substitutions described further later. Briefly `$<` refers to the first prerequisite and `$@` to the target, while `$(@:.pdf=.Rout)` substitutes .Rout for any cases of .pdf found in the target. 
 
 You can also see rules for deleting interim files, namely the *clean* and *cleanall* targets.
 
@@ -151,7 +152,9 @@ echo "  "
 cat workshop_example/modules/Makefile
 ```
 
-Note the use of pattern rules and the use of some auxiliary convenience targets to save typing. Also note how you can have a top-level Makefile that calls one more Makefiles elsewhere (often in subdirectories).
+The core of the processing is a pattern rule that creates HTML slides using another script, *make_slides*, which has code to create HTML files from R Markdown (.Rmd) files. 
+
+Note the use of pattern rules and the use of some auxiliary convenience targets to save typing (e.g., `make 1` rather than `make module1_basics.html`. Also note how you can have a top-level Makefile that calls one more Makefiles elsewhere (often in subdirectories).
 
 Once again, I won't run make here because I don't have all the necessary input files to run the recipes in *workshop_example/modules*.
 
@@ -209,7 +212,7 @@ SUFFIXES = $(suffix $(INPUTFILES))
 BASES = $(basename $(INPUTFILES))
 TRANSFORMED = $(addsuffix .cpp, $(BASES))
 
-DIRS := code_example workshop_example
+DIRS := workshop_example .
 ALLFILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*))
 ```
 
@@ -218,7 +221,8 @@ The file *Makefile_functions* will illustrate these in action:
 make -f Makefile_functions
 ```
 
-Another way to do substitution is with syntax like this, which replaces .pdf with .Rout in the `$@` variable. 
+As we've seen, another way to do substitution is with syntax like this `$(tmp:.pdf=.Rout)`, which replaces .pdf with .Rout in the `$tmp` variable. 
+
 
 
 

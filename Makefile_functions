@@ -17,7 +17,7 @@ SUFFIXES = $(suffix $(INPUTFILES))
 BASES = $(basename $(INPUTFILES))
 TRANSFORMED = $(addsuffix .cpp, $(BASES))
 
-DIRS := code_example workshop_example
+DIRS := workshop_example .
 ALLFILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*))
 
 test:
