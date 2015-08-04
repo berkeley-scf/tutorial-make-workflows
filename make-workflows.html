@@ -257,7 +257,10 @@ hr {
 <pre><code class="bash">make
 </code></pre>
 
-<pre><code>## pdflatex mypaper
+<pre><code>## R CMD BATCH --no-save model.R model.Rout
+## R CMD BATCH --no-save fig1.R fig1.Rout
+## R CMD BATCH --no-save fig2.R fig2.Rout
+## pdflatex mypaper
 ## This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Debian) (preloaded format=pdflatex)
 ##  restricted \write18 enabled.
 ## entering extended mode
@@ -280,8 +283,9 @@ hr {
 ## (/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
 ## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifpdf.sty)
 ## (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifvtex.sty)
-## (/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty)) (./mypaper.aux
-## ) (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd)
+## (/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty))
+## No file mypaper.aux.
+## (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd)
 ## (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
 ## [Loading MPS to PDF converter (version 2006.09.02).]
 ## ) (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
@@ -327,14 +331,34 @@ hr {
 ## * \@reversemarginfalse
 ## * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 ## 
+## 
+## LaTeX Warning: Reference `fig1&#39; on page 1 undefined on input line 18.
+## 
+## 
+## LaTeX Warning: Reference `fig2&#39; on page 1 undefined on input line 18.
+## 
+## 
+## Package natbib Warning: Citation `Stei:etal:2004&#39; on page 1 undefined on input 
+## line 18.
+## 
 ## &lt;fig1.pdf, id=1, 505.89pt x 505.89pt&gt; &lt;use fig1.pdf&gt;
-## &lt;fig2.pdf, id=2, 505.89pt x 505.89pt&gt; &lt;use fig2.pdf&gt; (./mypaper.bbl) [1{/var/li
-## b/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2 &lt;./fig1.pdf&gt; &lt;./fig2.pdf&gt;]
-## (./mypaper.aux) ){/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}&lt;/u
-## sr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texliv
-## e/texmf-dist/fonts/type1/urw/times/utmr8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fo
-## nts/type1/urw/times/utmri8a.pfb&gt;
-## Output written on mypaper.pdf (2 pages, 38780 bytes).
+## &lt;fig2.pdf, id=2, 505.89pt x 505.89pt&gt; &lt;use fig2.pdf&gt;
+## No file mypaper.bbl.
+## 
+## Package natbib Warning: There were undefined citations.
+## 
+## [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2 &lt;./fig1.pdf&gt; &lt;./fig2.
+## pdf&gt;] (./mypaper.aux)
+## 
+## LaTeX Warning: There were undefined references.
+## 
+## 
+## LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+## 
+##  ){/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}&lt;/usr/share/texliv
+## e/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fo
+## nts/type1/urw/times/utmr8a.pfb&gt;
+## Output written on mypaper.pdf (2 pages, 28947 bytes).
 ## Transcript written on mypaper.log.
 ## bibtex mypaper
 ## This is BibTeX, Version 0.99d (TeX Live 2014/Debian)
@@ -411,14 +435,26 @@ hr {
 ## * \@reversemarginfalse
 ## * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 ## 
+## 
+## Package natbib Warning: Citation `Stei:etal:2004&#39; on page 1 undefined on input 
+## line 18.
+## 
 ## &lt;fig1.pdf, id=1, 505.89pt x 505.89pt&gt; &lt;use fig1.pdf&gt;
-## &lt;fig2.pdf, id=2, 505.89pt x 505.89pt&gt; &lt;use fig2.pdf&gt; (./mypaper.bbl) [1{/var/li
-## b/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2 &lt;./fig1.pdf&gt; &lt;./fig2.pdf&gt;]
-## (./mypaper.aux) ){/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}&lt;/u
-## sr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texliv
-## e/texmf-dist/fonts/type1/urw/times/utmr8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fo
-## nts/type1/urw/times/utmri8a.pfb&gt;
-## Output written on mypaper.pdf (2 pages, 38780 bytes).
+## &lt;fig2.pdf, id=2, 505.89pt x 505.89pt&gt; &lt;use fig2.pdf&gt; (./mypaper.bbl)
+## 
+## Package natbib Warning: There were undefined citations.
+## 
+## [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2 &lt;./fig1.pdf&gt; &lt;./fig2.
+## pdf&gt;] (./mypaper.aux
+## 
+## Package natbib Warning: Citation(s) may have changed.
+## (natbib)                Rerun to get citations correct.
+## 
+## ) ){/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}&lt;/usr/share/texli
+## ve/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/f
+## onts/type1/urw/times/utmr8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fonts/type1/urw/
+## times/utmri8a.pfb&gt;
+## Output written on mypaper.pdf (2 pages, 40440 bytes).
 ## Transcript written on mypaper.log.
 ## pdflatex mypaper
 ## This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Debian) (preloaded format=pdflatex)
@@ -497,7 +533,7 @@ hr {
 ## sr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texliv
 ## e/texmf-dist/fonts/type1/urw/times/utmr8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fo
 ## nts/type1/urw/times/utmri8a.pfb&gt;
-## Output written on mypaper.pdf (2 pages, 38780 bytes).
+## Output written on mypaper.pdf (2 pages, 38578 bytes).
 ## Transcript written on mypaper.log.
 </code></pre>
 
@@ -512,13 +548,13 @@ make fig1.pdf
 <pre><code>## R CMD BATCH --no-save fig1.R fig1.Rout
 </code></pre>
 
-<h2>Dependencies</h2>
+<h2>Prerequisites</h2>
 
-<p>Make only runs a recipe when any of the dependent files have changed. So in the above example, if fig1.R changes and we invoke <code>make</code>, creation of fig1.pdf is re-done as is creation of mypaper.pdf, but fig2.pdf is <strong>not</strong> recreated. When there are steps that take a long time and don&#39;t need to be re-done, this can be quite helpful.</p>
+<p>Make only runs a recipe when any of the files on which the target depends (the prerequisites) have changed. So in the above example, if fig1.R changes and we invoke <code>make</code>, creation of fig1.pdf is re-done as is creation of mypaper.pdf, but fig2.pdf is <strong>not</strong> recreated. When there are steps that take a long time and don&#39;t need to be re-done, this can be quite helpful.</p>
 
 <p>As your Makefile involves more recipes and more complicated dependencies you harness more of the power of make.</p>
 
-<p>If you try to invoke a rule for which no dependencies have changed, you&#39;ll get a message like this: </p>
+<p>If you try to invoke a rule for which no prerequisites have changed, you&#39;ll get a message like this: </p>
 
 <pre><code class="bash">make fig1.pdf
 </code></pre>
@@ -530,7 +566,7 @@ make fig1.pdf
 
 <h1>Analysis workflows using make, extended example</h1>
 
-<p>One nice use of make is to automate workflows. As with building software, we have a series of things we want to do as part of an overall workflow. We may want to run one or more of those steps. Or we might want to run the full analysis but without rerunning analyses whose dependencies have not changed. Another benefit of this is just taking a structured, programmatic approach to show exactly what needs to be done for each piece of the analysis. </p>
+<p>One nice use of make is to automate workflows, where we have a series of things we want to do as part of an overall analysis. We may want to run one or more of those steps. Or we might want to run the full analysis but without rerunning analyses whose prerequisites have not changed. Another benefit of this is just taking a structured, programmatic approach to show exactly what needs to be done for each piece of the analysis. Thus you can use a Makefile to have your analysis be reproducible &ndash; if you hand a colleague your Makefile they can see exactly what the steps are and exactly what the inputs and outputs at each step are. </p>
 
 <p>What are the steps you might have in your Makefile?</p>
 
@@ -539,8 +575,8 @@ make fig1.pdf
 <li>preprocessing/cleaning</li>
 <li>analysis/modeling</li>
 <li>postprocessing output</li>
-<li>figures/tables</li>
-<li>presentations/papers</li>
+<li>making figures/tables</li>
+<li>creating presentations/papers</li>
 </ul>
 
 <p>A more expansive version of the example workflow in <em>Makefile</em> is in <em>Makefile_analysis</em>. The workflow won&#39;t run as I don&#39;t have all the input files available.</p>
@@ -612,11 +648,11 @@ make fig1.pdf
 
 <p>The pattern rule uses <code>%</code>, which acts as a wildcard and in this case tells make how to create targets such as <em>fig1.pdf</em>, <em>fig2.pdf</em>, &hellip; from corresponding prerequisites <em>fig1.R</em>, <em>fig2.R</em>, etc. The <code>$&lt;</code> and <code>$(@:.pdf=.Rout)</code> are special variables and substitutions described further later. Briefly <code>$&lt;</code> refers to the target and <code>$(@:.pdf=.Rout)</code> substitutes .Rout for any cases of .pdf found in the target. </p>
 
-<p>You can also see rules for deleting interim files, the <em>clean</em> and <em>cleanall</em> targets.</p>
+<p>You can also see rules for deleting interim files, namely the <em>clean</em> and <em>cleanall</em> targets.</p>
 
 <h1>Using make for document preparation</h1>
 
-<p>The file <em>workshop_example/Makefile</em> is an example that illustrates how you might use make to prepare presentation materials for a workshop. It calls <em>workshop_example/modules/Makefile</em>, so take a look at that file.</p>
+<p>The file <em>workshop_example/Makefile</em> is an example that illustrates how you might use make to prepare presentation materials for a workshop. It calls <em>workshop_example/modules/Makefile</em>, so let&#39;s see both of those files.</p>
 
 <pre><code class="bash">cat workshop_example/Makefile
 echo &quot;  &quot;
@@ -669,7 +705,7 @@ cat workshop_example/modules/Makefile
 
 <p>Note the use of pattern rules and the use of some auxiliary convenience targets to save typing. Also note how you can have a top-level Makefile that calls one more Makefiles elsewhere (often in subdirectories).</p>
 
-<p>Once again, I won&#39;t run make here because I don&#39;t have all the necessary dependencies in <em>workshop_example/modules</em>.</p>
+<p>Once again, I won&#39;t run make here because I don&#39;t have all the necessary input files to run the recipes in <em>workshop_example/modules</em>.</p>
 
 <h1>More advanced features of make</h1>
 
@@ -795,7 +831,7 @@ ALLFILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*))
 
 <p>Another way to do substitution is with syntax like this, which replaces .pdf with .Rout in the <code>$@</code> variable. </p>
 
-<h2>What make does</h2>
+<h2>What make does when it runs</h2>
 
 <p>Make processes the Makefile, figuring out the dependency tree, evaluating variables, and running the recipes that have prerequisites that have changed. More specifically, it</p>
 
@@ -809,7 +845,7 @@ ALLFILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*))
 <ul>
 <li>evaluates needed &#39;=&#39; variable assignments</li>
 </ul></li>
-<li>use date stamps on files to determine what dependencies need to be executed for target to be done</li>
+<li>use date stamps on files to determine what prerequisites need to be executed for target to be done</li>
 </ul>
 
 </body>
