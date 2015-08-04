@@ -89,13 +89,13 @@ make fig1.pdf
 ``` 
 
 
-##  Dependencies
+##  Prerequisites
 
-Make only runs a recipe when any of the dependent files have changed. So in the above example, if fig1.R changes and we invoke `make`, creation of fig1.pdf is re-done as is creation of mypaper.pdf, but fig2.pdf is **not** recreated. When there are steps that take a long time and don't need to be re-done, this can be quite helpful.
+Make only runs a recipe when any of the files on which the target depends (the prerequisites) have changed. So in the above example, if fig1.R changes and we invoke `make`, creation of fig1.pdf is re-done as is creation of mypaper.pdf, but fig2.pdf is **not** recreated. When there are steps that take a long time and don't need to be re-done, this can be quite helpful.
 
 As your Makefile involves more recipes and more complicated dependencies you harness more of the power of make.
 
-If you try to invoke a rule for which no dependencies have changed, you'll get a message like this: 
+If you try to invoke a rule for which no prerequisites have changed, you'll get a message like this: 
 ```{r}
 make fig1.pdf
 ```
@@ -104,15 +104,15 @@ make fig1.pdf
 
 # Analysis workflows using make, extended example
 
-One nice use of make is to automate workflows. As with building software, we have a series of things we want to do as part of an overall workflow. We may want to run one or more of those steps. Or we might want to run the full analysis but without rerunning analyses whose dependencies have not changed. Another benefit of this is just taking a structured, programmatic approach to show exactly what needs to be done for each piece of the analysis. 
+One nice use of make is to automate workflows, where we have a series of things we want to do as part of an overall analysis. We may want to run one or more of those steps. Or we might want to run the full analysis but without rerunning analyses whose prerequisites have not changed. Another benefit of this is just taking a structured, programmatic approach to show exactly what needs to be done for each piece of the analysis. Thus you can use a Makefile to have your analysis be reproducible -- if you hand a colleague your Makefile they can see exactly what the steps are and exactly what the inputs and outputs at each step are. 
 
 What are the steps you might have in your Makefile?
 - getting data
 - preprocessing/cleaning
 - analysis/modeling
 - postprocessing output
-- figures/tables
-- presentations/papers
+- making figures/tables
+- creating presentations/papers
 
 A more expansive version of the example workflow in *Makefile* is in *Makefile_analysis*. The workflow won't run as I don't have all the input files available.
 
@@ -137,11 +137,11 @@ We've seen a bunch of explicit rules that directly specify the recipe for a give
 
 The pattern rule uses `%`, which acts as a wildcard and in this case tells make how to create targets such as *fig1.pdf*, *fig2.pdf*, ... from corresponding prerequisites *fig1.R*, *fig2.R*, etc. The `$<` and `$(@:.pdf=.Rout)` are special variables and substitutions described further later. Briefly `$<` refers to the target and `$(@:.pdf=.Rout)` substitutes .Rout for any cases of .pdf found in the target. 
 
-You can also see rules for deleting interim files, the *clean* and *cleanall* targets.
+You can also see rules for deleting interim files, namely the *clean* and *cleanall* targets.
 
 # Using make for document preparation
 
-The file *workshop_example/Makefile* is an example that illustrates how you might use make to prepare presentation materials for a workshop. It calls *workshop_example/modules/Makefile*, so take a look at that file.
+The file *workshop_example/Makefile* is an example that illustrates how you might use make to prepare presentation materials for a workshop. It calls *workshop_example/modules/Makefile*, so let's see both of those files.
 
 ```{r}
 cat workshop_example/Makefile
@@ -153,7 +153,7 @@ cat workshop_example/modules/Makefile
 
 Note the use of pattern rules and the use of some auxiliary convenience targets to save typing. Also note how you can have a top-level Makefile that calls one more Makefiles elsewhere (often in subdirectories).
 
-Once again, I won't run make here because I don't have all the necessary dependencies in *workshop_example/modules*.
+Once again, I won't run make here because I don't have all the necessary input files to run the recipes in *workshop_example/modules*.
 
 # More advanced features of make
 
@@ -222,7 +222,7 @@ Another way to do substitution is with syntax like this, which replaces .pdf wit
 
 
 
-## What make does
+## What make does when it runs
 
 Make processes the Makefile, figuring out the dependency tree, evaluating variables, and running the recipes that have prerequisites that have changed. More specifically, it
 
@@ -232,6 +232,6 @@ Make processes the Makefile, figuring out the dependency tree, evaluating variab
  - looks at the target specified (by default the first target)
  - creates chain of rules from files that exist to the target
      - evaluates needed '=' variable assignments
- - use date stamps on files to determine what dependencies need to be executed for target to be done
+ - use date stamps on files to determine what prerequisites need to be executed for target to be done
 
 
