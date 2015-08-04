@@ -75,7 +75,7 @@ cat Makefile
 ```
 
 
-If we wanted to run the full workflow, we just run `make` on the file. Note that first the *fig1.pdf* and *fig2.pdf* rules are run and then *mypaper.pdf* is created.
+If we wanted to run the full workflow, we just run `make` on the file. Note that first the *results.Rda*, *fig1.pdf*, and *fig2.pdf* rules are run and then *mypaper.pdf* is created.
 
 ```{r}
 make
