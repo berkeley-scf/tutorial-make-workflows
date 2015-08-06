@@ -173,9 +173,11 @@ hr {
 
 <p>This tutorial covers the basics of using <em>make</em> to automate workflows for projects. </p>
 
-<p>A screencast accompanies this material.</p>
+<p>A <a href="http://youtu.be/-Cp3jBBHQBE">screencast</a> accompanies this material.</p>
 
-<p>We&#39;ll use a virtual machine developed here at Berkeley, <a href="http://bce.berkeley.edu">the Berkeley Common Environment (BCE)</a>. BCE is a virtual Linux machine - basically it is a Linux computer that you can run within your own computer, regardless of whether you are using Windows, Mac, or Linux. This provides a common environment so that things behave the same for all of us.</p>
+<p>We&#39;ll use a virtual machine developed here at Berkeley, <a href="http://bce.berkeley.edu">the Berkeley Common Environment (BCE)</a>. BCE is a virtual Linux machine - basically it is a Linux computer that you can run within your own computer, regardless of whether you are using Windows, Mac, or Linux. This provides a common environment so that things behave the same for all of us. </p>
+
+<p>This tutorial assumes you are able to use the UNIX command line; we provide a tutorial on the <a href="http://statistics.berkeley.edu/computing/training/tutorials">Basics of UNIX</a> in the context of BCE.</p>
 
 <p>Materials for this tutorial, including the R markdown file that was used to create this document are available on github at (<a href="https://github.com/berkeley-scf/tutorial-make-workflows">https://github.com/berkeley-scf/tutorial-make-workflows</a>).  You can download the files by doing a <code>git clone</code> from a terminal window on UNIX-like machine. The following will work from the command line on BCE.</p>
 
@@ -252,7 +254,7 @@ hr {
 ##  R CMD BATCH --no-save fig2.R fig2.Rout
 </code></pre>
 
-<p>If we wanted to run the full workflow, we just run <code>make</code> on the file:</p>
+<p>If we wanted to run the full workflow, we just run <code>make</code> on the file. Note that first the <em>results.Rda</em>, <em>fig1.pdf</em>, and <em>fig2.pdf</em> rules are run and then <em>mypaper.pdf</em> is created.</p>
 
 <pre><code class="bash">make
 </code></pre>
@@ -358,7 +360,7 @@ hr {
 ##  ){/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}&lt;/usr/share/texliv
 ## e/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fo
 ## nts/type1/urw/times/utmr8a.pfb&gt;
-## Output written on mypaper.pdf (2 pages, 28947 bytes).
+## Output written on mypaper.pdf (2 pages, 28989 bytes).
 ## Transcript written on mypaper.log.
 ## bibtex mypaper
 ## This is BibTeX, Version 0.99d (TeX Live 2014/Debian)
@@ -454,7 +456,7 @@ hr {
 ## ve/texmf-dist/fonts/type1/urw/times/utmb8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/f
 ## onts/type1/urw/times/utmr8a.pfb&gt;&lt;/usr/share/texlive/texmf-dist/fonts/type1/urw/
 ## times/utmri8a.pfb&gt;
-## Output written on mypaper.pdf (2 pages, 40440 bytes).
+## Output written on mypaper.pdf (2 pages, 40441 bytes).
 ## Transcript written on mypaper.log.
 ## pdflatex mypaper
 ## This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Debian) (preloaded format=pdflatex)
@@ -646,7 +648,7 @@ make fig1.pdf
 
 <p>We&#39;ve seen a bunch of explicit rules that directly specify the recipe for a given target. In <em>Makefile_analysis</em> we&#39;ve also streamlined things by using a pattern rule to make a class of targets. </p>
 
-<p>The pattern rule uses <code>%</code>, which acts as a wildcard and in this case tells make how to create targets such as <em>fig1.pdf</em>, <em>fig2.pdf</em>, &hellip; from corresponding prerequisites <em>fig1.R</em>, <em>fig2.R</em>, etc. The <code>$&lt;</code> and <code>$(@:.pdf=.Rout)</code> are special variables and substitutions described further later. Briefly <code>$&lt;</code> refers to the target and <code>$(@:.pdf=.Rout)</code> substitutes .Rout for any cases of .pdf found in the target. </p>
+<p>The pattern rule uses <code>%</code>, which acts as a wildcard and in this case tells make how to create targets such as <em>fig1.pdf</em>, <em>fig2.pdf</em>, &hellip; from corresponding prerequisites <em>fig1.R</em>, <em>fig2.R</em>, etc. The <code>$&lt;</code> and <code>$(@:.pdf=.Rout)</code> are special variables and substitutions described further later. Briefly <code>$&lt;</code> refers to the first prerequisite and <code>$@</code> to the target, while <code>$(@:.pdf=.Rout)</code> substitutes .Rout for any cases of .pdf found in the target. </p>
 
 <p>You can also see rules for deleting interim files, namely the <em>clean</em> and <em>cleanall</em> targets.</p>
 
@@ -703,7 +705,9 @@ cat workshop_example/modules/Makefile
 ## 11: module11_next.html
 </code></pre>
 
-<p>Note the use of pattern rules and the use of some auxiliary convenience targets to save typing. Also note how you can have a top-level Makefile that calls one more Makefiles elsewhere (often in subdirectories).</p>
+<p>The core of the processing is a pattern rule that creates HTML slides using another script, <em>make_slides</em>, which has code to create HTML files from R Markdown (.Rmd) files. </p>
+
+<p>Note the use of pattern rules and the use of some auxiliary convenience targets to save typing (e.g., <code>make 1</code> rather than <code>make module1_basics.html</code>. Also note how you can have a top-level Makefile that calls one more Makefiles elsewhere (often in subdirectories).</p>
 
 <p>Once again, I won&#39;t run make here because I don&#39;t have all the necessary input files to run the recipes in <em>workshop_example/modules</em>.</p>
 
@@ -804,7 +808,7 @@ SUFFIXES = $(suffix $(INPUTFILES))
 BASES = $(basename $(INPUTFILES))
 TRANSFORMED = $(addsuffix .cpp, $(BASES))
 
-DIRS := code_example workshop_example
+DIRS := workshop_example .
 ALLFILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*))
 </code></pre>
 
@@ -825,11 +829,11 @@ ALLFILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*))
 ## SUFFIXES is .c .o
 ## echo TRANSFORMED is /tmp/foo.cpp /var/tmp/bar.cpp
 ## TRANSFORMED is /tmp/foo.cpp /var/tmp/bar.cpp
-## echo ALLFILES is    workshop_example/Makefile workshop_example/modules
-## ALLFILES is workshop_example/Makefile workshop_example/modules
+## echo ALLFILES is  workshop_example/Makefile workshop_example/modules  ./data.csv ./model.R ./fig2.Rout ./mypaper.bbl ./refs.bib ./mypaper.blg ./mypaper.pdf ./Makefile_variables ./make-workflows.html ./fig1.R ./Makefile_analysis ./fig1.pdf ./make-workflows.Rmd ./model.Rout ./mypaper.aux ./Makefile_functions ./mypaper.log ./fig2.pdf ./fig1.Rout ./results.Rda ./mypaper.tex ./workshop_example ./Makefile_cleanup ./Makefile ./fig2.R
+## ALLFILES is workshop_example/Makefile workshop_example/modules ./data.csv ./model.R ./fig2.Rout ./mypaper.bbl ./refs.bib ./mypaper.blg ./mypaper.pdf ./Makefile_variables ./make-workflows.html ./fig1.R ./Makefile_analysis ./fig1.pdf ./make-workflows.Rmd ./model.Rout ./mypaper.aux ./Makefile_functions ./mypaper.log ./fig2.pdf ./fig1.Rout ./results.Rda ./mypaper.tex ./workshop_example ./Makefile_cleanup ./Makefile ./fig2.R
 </code></pre>
 
-<p>Another way to do substitution is with syntax like this, which replaces .pdf with .Rout in the <code>$@</code> variable. </p>
+<p>As we&#39;ve seen, another way to do substitution is with syntax like this <code>$(tmp:.pdf=.Rout)</code>, which replaces .pdf with .Rout in the <code>$tmp</code> variable. </p>
 
 <h2>What make does when it runs</h2>
 
