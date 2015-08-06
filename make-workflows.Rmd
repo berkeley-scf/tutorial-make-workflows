@@ -13,7 +13,7 @@ opts_chunk$set(engine='bash') # because we're using a lot of bash, let's set as 
 
 This tutorial covers the basics of using *make* to automate workflows for projects. 
 
-A screencast accompanies this material.
+A [screencast](http://youtu.be/-Cp3jBBHQBE) accompanies this material.
 
 We'll use a virtual machine developed here at Berkeley, [the Berkeley Common Environment (BCE)](http://bce.berkeley.edu). BCE is a virtual Linux machine - basically it is a Linux computer that you can run within your own computer, regardless of whether you are using Windows, Mac, or Linux. This provides a common environment so that things behave the same for all of us. 
 
