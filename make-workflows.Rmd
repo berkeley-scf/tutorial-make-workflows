@@ -33,6 +33,8 @@ Rscript -e "library(knitr); knit2html('make-workflows.Rmd')"
   
 This tutorial will focus on using make to manage workflows, in particular analysis workflows. We won't cover use of make to build software.
 
+This tutorial by Christopher Paciorek is licensed under a Creative Commons Attribution 3.0 Unported License.
+
 # 1) Basic usage of make
 
 *Make* is software that allows you to build software, create files, or carry out other tasks in a way that respects the dependencies amongst a series of files/tasks.
